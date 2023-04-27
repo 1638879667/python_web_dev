@@ -1,5 +1,7 @@
 import sys
 import pygame
+
+from bullet import Bullet
 from settings import Settings
 from ship import Ship
 
@@ -20,6 +22,8 @@ class AlienInversion:
         pygame.display.set_caption("Alien Invasion")
         # 引入飞船
         self.ship = Ship(self)
+        # 创建存储子弹的编组
+        self.bullets = pygame.sprite.Group()
 
     def run_game(self):
         """开始游戏的主循环"""
@@ -28,6 +32,7 @@ class AlienInversion:
             self._check_events()
             # 更新飞船位置
             self.ship.update()
+            self.bullets.update()
             # 屏幕绘制
             self._update_screen()
 
@@ -50,6 +55,8 @@ class AlienInversion:
             self.ship.move_left = True
         elif event.key == pygame.K_q:
             sys.exit()
+        elif event.key == pygame.K_SPACE:
+            self._fire_bullet()
 
     def _check_keyup_events(self, event):
         """响应按键松开"""
@@ -64,8 +71,15 @@ class AlienInversion:
         self.screen.fill(self.settings.bg_color)
         # 飞船显示在屏幕上
         self.ship.blitme()
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
         # 绘制屏幕
         pygame.display.flip()
+
+    def _fire_bullet(self):
+        """创建一颗子弹，并将其加入到编组bullets中"""
+        new_bullet = Bullet(self)
+        self.bullets.add(new_bullet)
 
 
 if __name__ == '__main__':
