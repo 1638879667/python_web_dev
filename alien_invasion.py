@@ -32,7 +32,8 @@ class AlienInversion:
             self._check_events()
             # 更新飞船位置
             self.ship.update()
-            self.bullets.update()
+            # 更新子弹
+            self._update_bullets()
             # 屏幕绘制
             self._update_screen()
 
@@ -78,8 +79,18 @@ class AlienInversion:
 
     def _fire_bullet(self):
         """创建一颗子弹，并将其加入到编组bullets中"""
-        new_bullet = Bullet(self)
-        self.bullets.add(new_bullet)
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+
+    def _update_bullets(self):
+        """更新子弹的位置并删除消失的子弹"""
+        self.bullets.update()
+        # 删除消失的子弹
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+        # print(len(self.bullets))
 
 
 if __name__ == '__main__':
