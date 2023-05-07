@@ -4,6 +4,7 @@ import pygame
 from bullet import Bullet
 from settings import Settings
 from ship import Ship
+from alien import Alien
 
 
 class AlienInversion:
@@ -24,6 +25,10 @@ class AlienInversion:
         self.ship = Ship(self)
         # 创建存储子弹的编组
         self.bullets = pygame.sprite.Group()
+        # 存储外星人的编组
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
 
     def run_game(self):
         """开始游戏的主循环"""
@@ -74,6 +79,8 @@ class AlienInversion:
         self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        # 绘制外星人
+        self.aliens.draw(self.screen)
         # 绘制屏幕
         pygame.display.flip()
 
@@ -91,6 +98,31 @@ class AlienInversion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         # print(len(self.bullets))
+
+    def _create_fleet(self):
+        """创建外星人群"""
+        # 创建一个外星人并计算一行可容纳多少外星人
+        # 外星人的间距为外星人宽度
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        available_space_x = self.settings.screen_width - (2 * alien_width)
+        number_aliens_x = available_space_x//(2 * alien_width)
+        # 计算屏幕可容纳多少行外星人
+        ship_height = self.ship.rect.height
+        available_space_y = (self.settings.screen_height - (3 * alien_height) - ship_height)
+        number_rows = available_space_y // (2 * alien_height)
+        # 创建第一行外星人
+        for row_number in range(number_rows):
+            for alien_number in range(number_aliens_x):
+                self._create_alien(alien_number, row_number)
+
+    def _create_alien(self, alien_number, row_number):
+        alien = Alien(self)
+        alien_width = alien.rect.width
+        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.rect.x = alien.x
+        alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+        self.aliens.add(alien)
 
 
 if __name__ == '__main__':
