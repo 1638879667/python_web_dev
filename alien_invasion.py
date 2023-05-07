@@ -5,6 +5,8 @@ from bullet import Bullet
 from settings import Settings
 from ship import Ship
 from alien import Alien
+from game_stats import GameStats
+from time import sleep
 
 
 class AlienInversion:
@@ -21,6 +23,8 @@ class AlienInversion:
         # self.settings.screen_width = self.screen.get_rect().width
         # self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption("Alien Invasion")
+        # 创建一个用于存储游戏统计信息的实例
+        self.stats = GameStats(self)
         # 引入飞船
         self.ship = Ship(self)
         # 创建存储子弹的编组
@@ -39,6 +43,8 @@ class AlienInversion:
             self.ship.update()
             # 更新子弹
             self._update_bullets()
+            # 更新外星人位置
+            self._update_aliens()
             # 屏幕绘制
             self._update_screen()
 
@@ -98,6 +104,7 @@ class AlienInversion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         # print(len(self.bullets))
+        self._check_bullet_alien_collisions()
 
     def _create_fleet(self):
         """创建外星人群"""
@@ -124,8 +131,50 @@ class AlienInversion:
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         self.aliens.add(alien)
 
+    def _update_aliens(self):
+        """"更新外星人群中所有外星人的位置"""
+        """检查是否有外星人位于屏幕边缘，并更新整群外星人的位置"""
+        self._check_fleet_edges()
+        self.aliens.update()
+        # 检测外星人和飞船之间的碰撞
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            self._ship_hit()
+            # print("Ship hit!!!")
 
-if __name__ == '__main__':
-    # 创建游戏实例并运行游戏
-    ai = AlienInversion()
-    ai.run_game()
+    def _check_fleet_edges(self):
+        """有外星人到达边缘时采取相应的措施"""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """将整群外星人下移，并改变它们的方向"""
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+
+    def _check_bullet_alien_collisions(self):
+        # 检查是否有子弹击中外星人
+        # 如果是，就删除相应的子弹和外星人，返回对应的子弹和外星人组成的字典
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        if not self.aliens:
+            # 删除现有的子弹并新建一个群外星人
+            self.bullets.empty()
+            self._create_alien()
+
+    def _ship_hit(self):
+        """响应飞船被外星人撞到"""
+        # 将ships_left减1
+        self.stats.ships_left -= 1
+        # 清空余下的外星人和子弹
+        self.aliens.empty()
+        self.bullets.empty()
+        # 创建一群新的外星人，并将飞船放到屏幕底端的中央
+        self._create_fleet()
+        self.ship.center_ship()
+        # 暂停
+        sleep(1)
+
+
+
