@@ -72,10 +72,11 @@ class AlienInversion:
         """玩家单机Play按钮时开始新游戏"""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
-            # 充值游戏
+            # 重置游戏
             self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
             self.stats.game_active = True
+            self.score_banner.prep_score()
             # 清空余下的外星人和子弹
             self.aliens.empty()
             self.bullets.empty()
@@ -192,11 +193,19 @@ class AlienInversion:
         # 检查是否有子弹击中外星人
         # 如果是，就删除相应的子弹和外星人，返回对应的子弹和外星人组成的字典
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.score_banner.prep_score()
+            self.score_banner.check_high_socre()
         if not self.aliens:
             # 删除现有的子弹并新建一个群外星人:消灭所有的外星人
             self.bullets.empty()
             self._create_fleet()
             self.settings.increase_speed()
+            # 提高等级
+            self.stats.level += 1
+            self.score_banner.prep_level()
 
     def _ship_hit(self):
         """响应飞船被外星人撞到"""
