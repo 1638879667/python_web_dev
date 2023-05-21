@@ -60,7 +60,7 @@ class Scoreboard:
 
     def prep_ships(self):
         """显示剩余飞船数"""
-        self.ships = Group
+        self.ships = Group()
         for ship_number in range(self.stats.ships_left):
             ship = Ship(self.ai_game)
             ship.rect.x = 10 + ship_number * ship.rect.width
