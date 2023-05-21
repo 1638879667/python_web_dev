@@ -77,6 +77,8 @@ class AlienInversion:
             self.stats.reset_stats()
             self.stats.game_active = True
             self.score_banner.prep_score()
+            self.score_banner.prep_level()
+            self.score_banner.prep_ships()
             # 清空余下的外星人和子弹
             self.aliens.empty()
             self.bullets.empty()
@@ -197,7 +199,7 @@ class AlienInversion:
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.score_banner.prep_score()
-            self.score_banner.check_high_socre()
+            self.score_banner.check_high_score()
         if not self.aliens:
             # 删除现有的子弹并新建一个群外星人:消灭所有的外星人
             self.bullets.empty()
@@ -212,6 +214,7 @@ class AlienInversion:
         if self.stats.ships_left > 0:
             # 将ships_left减1
             self.stats.ships_left -= 1
+            self.score_banner.prep_ships()
             # 清空余下的外星人和子弹
             self.aliens.empty()
             self.bullets.empty()
